@@ -5,7 +5,7 @@ const { randomInt, randomBytes } = require("crypto");
 const fetch = require("node-fetch");
 const path = require("path");
 
-require("dotenv").config();
+//require("dotenv").config();
 
 const app = express();
 
