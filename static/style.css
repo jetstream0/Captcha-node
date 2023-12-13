@@ -1,0 +1,19 @@
+#challenge {
+  width: 200px;
+}
+
+#challenge-answer {
+  width: 70%;
+  margin: 0;
+  padding: 0;
+}
+
+#challenge-img {
+  width: 100%;
+}
+
+#challenge-submit {
+  width: 28%;
+  margin: 0;
+  padding: 0;
+}

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta property="og:title" content="Captcha">
+    <meta property="og:description" content="A free text captcha service">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Captcha</title>
+    <link href="/style.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <% if (completed) { %>
+      <% if (success) { %>
+        <p>Success</p>
+      <% } else { %>
+        <p>Failed</p>
+      <% } %>
+    <% } else { %>
+      <div id="challenge">
+        <img src="<%= challenge_url %>" title="A text captcha" id="challenge-img"/>
+        <br>
+        <form method="POST" action="/" autocomplete="off">
+          <input type="text" name="answer" id="challenge-answer"/>
+          <input type="hidden" name="code" value="<%= challenge_code %>"/>
+          <input type="hidden" name="nonce" value="<%= challenge_nonce %>"/>
+          <input type="submit" id="challenge-submit" value="Submit"/>
+        </form>
+      </div>
+    <% } %>
+  </body>
+</html>
