@@ -1,11 +1,11 @@
 const express = require("express");
 const { createCanvas, loadImage } = require("canvas");
-const { xsalsa20poly1305 } = require("@noble/ciphers/salsa");
+const { salsa20 } = require("@noble/ciphers/salsa");
 const { randomInt, randomBytes } = require("crypto");
 const fetch = require("node-fetch");
 const path = require("path");
 
-//require("dotenv").config();
+require("dotenv").config();
 
 const app = express();
 
@@ -50,9 +50,17 @@ function gen_code(length: number): string {
   return code;
 }
 
-function _gen_key(): string {
+function gen_key(): string {
   return uint8array_to_hex(new Uint8Array(randomBytes(32).buffer));
 }
+
+//because we use a csprng for nonce when we technically arent supposed to,
+//lets rotate the keys every few hours
+let KEY: string = gen_key();
+
+setInterval(() => {
+  KEY = gen_key();
+}, 6 * 60 * 60 * 1000);
 
 function get_time(): number {
   return Math.round((Date.now()) / 1000);
@@ -62,13 +70,15 @@ function gen_nonce(bytes: number): Uint8Array {
   return new Uint8Array(randomBytes(bytes).buffer);
 }
 
+//technically should not be using random nonces with salsa20 (xsalsa20 ok though)
+
 function encrypt(code: string, nonce: Uint8Array): string {
   const to_encrypt: string = `${code}-${String(get_time())}`;
-  return uint8array_to_hex(xsalsa20poly1305(hex_to_uint8array(process.env.KEY), nonce).encrypt(new TextEncoder().encode(to_encrypt)));
+  return uint8array_to_hex(salsa20(hex_to_uint8array(KEY), nonce, new TextEncoder().encode(to_encrypt)));
 }
 
 function decrypt(encrypted: string, nonce: string): string {
-  return new TextDecoder().decode(xsalsa20poly1305(hex_to_uint8array(process.env.KEY), hex_to_uint8array(nonce)).decrypt(hex_to_uint8array(encrypted)));
+  return new TextDecoder().decode(salsa20(hex_to_uint8array(KEY), hex_to_uint8array(nonce), hex_to_uint8array(encrypted)));
 }
 
 app.get("/", async (_req, res) => {
@@ -113,7 +123,7 @@ app.post("/", async (req, res) => {
 });
 
 app.get("/captcha", (_req, res) => {
-  const nonce: Uint8Array = gen_nonce(24);
+  const nonce: Uint8Array = gen_nonce(8);
   const encrypted: string = encrypt(gen_code(6), nonce);
   return res.json({
     image: `${encrypted}.png`,
