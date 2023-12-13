@@ -155,6 +155,8 @@ app.get("/challenge/:encrypted.png", async (req, res) => {
   }
   const canvas = createCanvas(210, 70)
   const context = canvas.getContext("2d");
+  context.fillStyle = "white";
+  context.fillRect(0, 0, 210, 70);
   for (let i = 0; i < code.length; i++) {
     const char_image = await loadImage(`./chars/${code[i].toUpperCase()}.png`);
     let width: number = char_image.width + randomInt(0, 8);
